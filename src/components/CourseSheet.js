@@ -8,6 +8,59 @@ const timeLabel = (time) => {
 };
 const spotsColor = (spots) =>
   spots <= 1 ? "#e87070" : spots === 2 ? "#e8c070" : "#7db87d";
+const PhotoGallery = ({ photos, name }) => {
+  const [active, setActive] = React.useState(0);
+  return (
+<div style={{ position: "relative", width: "100%", height: 220, overflow: "hidden", background: "#060e06" }}>
+      {photos.map((src, i) => (
+<img
+          key={i}
+          src={src}
+          alt={`${name} ${i + 1}`}
+          style={{
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%",
+            objectFit: "cover", opacity: active === i ? 0.85 : 0,
+            transition: "opacity 0.4s ease",
+          }}
+          onError={(e) => { e.target.style.display = "none"; }}
+        />
+      ))}
+<div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, #0a160a)" }} />
+      {photos.length > 1 && (
+<div style={{ position: "absolute", bottom: 12, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6 }}>
+          {photos.map((_, i) => (
+<button
+              key={i}
+              onClick={() => setActive(i)}
+              style={{
+                width: active === i ? 20 : 6,
+                height: 6, borderRadius: 3,
+                background: active === i ? "#7db87d" : "rgba(255,255,255,0.4)",
+                border: "none", cursor: "pointer",
+                transition: "all 0.2s", padding: 0,
+              }}
+            />
+          ))}
+</div>
+      )}
+      {photos.length > 1 && (
+<>
+<button
+            onClick={() => setActive((a) => (a - 1 + photos.length) % photos.length)}
+            style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", border: "none", color: "#fff", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16 }}>
+            ‹
+</button>
+<button
+            onClick={() => setActive((a) => (a + 1) % photos.length)}
+            style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", border: "none", color: "#fff", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16 }}>
+            ›
+</button>
+</>
+      )}
+</div>
+  );
+};
 const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters }) => {
   const [activeDay, setActiveDay] = useState(filters.day || "today");
   const filteredTimes = course.teeTimes.filter((t) => {
@@ -24,18 +77,20 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters })
 <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, paddingBottom: 4 }}>
 <div style={{ width: 36, height: 4, borderRadius: 2, background: "#2a4a2a" }} />
 </div>
-      {/* Course photo */}
-      {course.photo && (
-<div style={{ width: "100%", height: 160, overflow: "hidden", position: "relative" }}>
+      {/* Photo gallery or single photo */}
+      {course.photos && course.photos.length > 0 ? (
+<PhotoGallery photos={course.photos} name={course.name} />
+      ) : course.photo ? (
+<div style={{ width: "100%", height: 200, overflow: "hidden", position: "relative" }}>
 <img
             src={course.photo}
             alt={course.name}
-            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.8 }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
             onError={(e) => { e.target.style.display = "none"; }}
           />
 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, #0a160a)" }} />
 </div>
-      )}
+      ) : null}
       {/* Header */}
 <div style={{ padding: "12px 20px 0", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
 <div style={{ flex: 1, paddingRight: 12 }}>
@@ -97,18 +152,22 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters })
 </div>
 <div style={{ display: "flex", gap: 6 }}>
             {["today", "tomorrow"].map((d) => (
-<button key={d} onClick={() => setActiveDay(d)} style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid", borderColor: activeDay === d ? "#7db87d" : "#1e3a1e", background: activeDay === d ? "rgba(125,184,125,0.15)" : "transparent", color: activeDay === d ? "#b8d8b8" : "#4a6a4a", cursor: "pointer", fontSize: 12, fontFamily: "'Georgia', serif" }}>
+<button key={d} onClick={() => setActiveDay(d)}
+                style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid", borderColor: activeDay === d ? "#7db87d" : "#1e3a1e", background: activeDay === d ? "rgba(125,184,125,0.15)" : "transparent", color: activeDay === d ? "#b8d8b8" : "#4a6a4a", cursor: "pointer", fontSize: 12, fontFamily: "'Georgia', serif" }}>
                 {d.charAt(0).toUpperCase() + d.slice(1)}
 </button>
             ))}
 </div>
 </div>
         {filteredTimes.length === 0 ? (
-<div style={{ textAlign: "center", color: "#4a6a4a", padding: "20px 0", fontSize: 14 }}>No tee times match your filters for {activeDay}.</div>
+<div style={{ textAlign: "center", color: "#4a6a4a", padding: "20px 0", fontSize: 14 }}>
+            No tee times match your filters for {activeDay}.
+</div>
         ) : (
 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {filteredTimes.map((tt) => (
-<a key={tt.id} href={course.teeTimesUrl} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0f1f0f", border: "1px solid #1e3a1e", borderRadius: 12, padding: "12px 16px", textDecoration: "none", color: "inherit" }}>
+<a key={tt.id} href={course.teeTimesUrl} target="_blank" rel="noopener noreferrer"
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0f1f0f", border: "1px solid #1e3a1e", borderRadius: 12, padding: "12px 16px", textDecoration: "none", color: "inherit" }}>
 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
 <div style={{ fontSize: 17, fontWeight: 600, color: "#d8e8d8" }}>{timeLabel(tt.time)}</div>
 <div style={{ fontSize: 12, color: spotsColor(tt.spots) }}>{tt.spots} {tt.spots === 1 ? "spot" : "spots"}</div>
@@ -123,7 +182,9 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters })
         )}
 </div>
       {/* Description */}
-<div style={{ padding: "0 20px 32px", color: "#5a7a5a", fontSize: 14, lineHeight: 1.6 }}>{course.description}</div>
+<div style={{ padding: "0 20px 32px", color: "#5a7a5a", fontSize: 14, lineHeight: 1.6 }}>
+        {course.description}
+</div>
 </div>
   );
 };
