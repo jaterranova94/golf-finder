@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Heart, X, MapPin, ExternalLink, Clock, Phone, Globe } from "lucide-react";
+import { Heart, X, MapPin, ExternalLink, Clock, Phone, Globe, Bell } from "lucide-react";
+import AlertSettings from "../AlertSettings";
 const timeLabel = (time) => {
   const [h, m] = time.split(":").map(Number);
   const period = h >= 12 ? "PM" : "AM";
@@ -61,8 +62,9 @@ const PhotoGallery = ({ photos, name }) => {
 </div>
   );
 };
-const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters }) => {
+const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, user, onSignInRequired }) => {
   const [activeDay, setActiveDay] = useState(filters.day || "today");
+  const [showAlert, setShowAlert] = useState(false);
   const filteredTimes = course.teeTimes.filter((t) => {
     if (t.day !== activeDay) return false;
     if (t.price > filters.maxPrice && filters.maxPrice !== 999) return false;
@@ -150,7 +152,12 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters })
 <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#7db87d", textTransform: "uppercase", letterSpacing: "0.06em" }}>
 <Clock size={14} />Tee Times
 </div>
-<div style={{ display: "flex", gap: 6 }}>
+<div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+<button
+              onClick={() => setShowAlert(!showAlert)}
+              style={{ background: showAlert ? "rgba(125,184,125,0.2)" : "rgba(125,184,125,0.1)", border: "1px solid #2a4a2a", color: "#7db87d", borderRadius: 8, padding: "5px 10px", cursor: "pointer", fontSize: 12, fontFamily: "'Georgia', serif", display: "flex", alignItems: "center", gap: 4 }}>
+<Bell size={12} />Alert
+</button>
             {["today", "tomorrow"].map((d) => (
 <button key={d} onClick={() => setActiveDay(d)}
                 style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid", borderColor: activeDay === d ? "#7db87d" : "#1e3a1e", background: activeDay === d ? "rgba(125,184,125,0.15)" : "transparent", color: activeDay === d ? "#b8d8b8" : "#4a6a4a", cursor: "pointer", fontSize: 12, fontFamily: "'Georgia', serif" }}>
@@ -159,6 +166,15 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters })
             ))}
 </div>
 </div>
+        {/* Alert settings panel */}
+        {showAlert && (
+<AlertSettings
+            course={course}
+            user={user}
+            onClose={() => setShowAlert(false)}
+            onSignInRequired={onSignInRequired}
+          />
+        )}
         {filteredTimes.length === 0 ? (
 <div style={{ textAlign: "center", color: "#4a6a4a", padding: "20px 0", fontSize: 14 }}>
             No tee times match your filters for {activeDay}.
