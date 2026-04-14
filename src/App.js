@@ -162,7 +162,7 @@ export default function App() {
 <FilterPanel filters={filters} setFilters={setFilters} onClose={() => setShowFilters(false)} />
       )}
       {showAuth && (
-<AuthModal onClose={() => setShowAuth(false)} onSuccess={() => setUser(user)} />
+<AuthModal onClose={() => setShowAuth(false)} onSuccess={() => supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null))} />
       )}
 </div>
   );
