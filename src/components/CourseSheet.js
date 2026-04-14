@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Heart, X, MapPin, ExternalLink, Clock } from "lucide-react";
+import { Heart, X, MapPin, ExternalLink, Clock, Phone, Globe } from "lucide-react";
 const timeLabel = (time) => {
   const [h, m] = time.split(":").map(Number);
   const period = h >= 12 ? "PM" : "AM";
@@ -19,10 +19,24 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters })
     return true;
   });
   return (
-<div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0a160a", borderTop: "1px solid #1e3a1e", borderRadius: "20px 20px 0 0", zIndex: 150, maxHeight: "82vh", overflowY: "auto", fontFamily: "'Georgia', serif", color: "#d8e8d8", boxShadow: "0 -8px 40px rgba(0,0,0,0.6)" }}>
+<div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0a160a", borderTop: "1px solid #1e3a1e", borderRadius: "20px 20px 0 0", zIndex: 150, maxHeight: "88vh", overflowY: "auto", fontFamily: "'Georgia', serif", color: "#d8e8d8", boxShadow: "0 -8px 40px rgba(0,0,0,0.6)" }}>
+      {/* Drag handle */}
 <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, paddingBottom: 4 }}>
 <div style={{ width: 36, height: 4, borderRadius: 2, background: "#2a4a2a" }} />
 </div>
+      {/* Course photo */}
+      {course.photo && (
+<div style={{ width: "100%", height: 160, overflow: "hidden", position: "relative" }}>
+<img
+            src={course.photo}
+            alt={course.name}
+            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.8 }}
+            onError={(e) => { e.target.style.display = "none"; }}
+          />
+<div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, #0a160a)" }} />
+</div>
+      )}
+      {/* Header */}
 <div style={{ padding: "12px 20px 0", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
 <div style={{ flex: 1, paddingRight: 12 }}>
 <div style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.2, color: "#e8f0e8", marginBottom: 4 }}>{course.name}</div>
@@ -39,6 +53,7 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters })
 </button>
 </div>
 </div>
+      {/* Stats */}
 <div style={{ padding: "14px 20px", display: "flex", gap: 20, borderBottom: "1px solid #1a2e1a" }}>
 <Stat label="Slope" value={course.slope} />
 <Stat label="Rating" value={course.courseRating} />
@@ -46,6 +61,7 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters })
 <Stat label="Holes" value={course.holes} />
 <Stat label="Walk" value={course.walkable ? "✓" : "Cart"} highlight={course.walkable} />
 </div>
+      {/* Green fee + tags */}
 <div style={{ padding: "14px 20px", borderBottom: "1px solid #1a2e1a" }}>
 <div style={{ fontSize: 13, color: "#5a7a5a", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Green Fees</div>
 <div style={{ fontSize: 24, fontWeight: 700, color: "#b8d8b8", marginBottom: 10 }}>${course.greenFee.min}–${course.greenFee.max}</div>
@@ -55,6 +71,25 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters })
           ))}
 </div>
 </div>
+      {/* Contact + links */}
+<div style={{ padding: "14px 20px", borderBottom: "1px solid #1a2e1a", display: "flex", flexDirection: "column", gap: 10 }}>
+        {course.phone && (
+<a href={`tel:${course.phone}`} style={{ display: "flex", alignItems: "center", gap: 10, color: "#7db87d", textDecoration: "none", fontSize: 14 }}>
+<Phone size={14} />{course.phone}
+</a>
+        )}
+        {course.website && (
+<a href={course.website} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, color: "#7db87d", textDecoration: "none", fontSize: 14 }}>
+<Globe size={14} />Official Website
+</a>
+        )}
+        {course.address && (
+<a href={`https://maps.google.com/?q=${encodeURIComponent(course.address)}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, color: "#5a7a5a", textDecoration: "none", fontSize: 13 }}>
+<MapPin size={14} />{course.address}
+</a>
+        )}
+</div>
+      {/* Tee Times */}
 <div style={{ padding: "16px 20px" }}>
 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
 <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#7db87d", textTransform: "uppercase", letterSpacing: "0.06em" }}>
@@ -87,6 +122,7 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters })
 </div>
         )}
 </div>
+      {/* Description */}
 <div style={{ padding: "0 20px 32px", color: "#5a7a5a", fontSize: 14, lineHeight: 1.6 }}>{course.description}</div>
 </div>
   );
