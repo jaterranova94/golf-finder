@@ -1,3 +1,4 @@
+import { getFilteredTeeTimes } from "../data/courses";
 import React, { useState } from "react";
 import { Heart, X, MapPin, ExternalLink, Clock, Phone, Globe, Bell } from "lucide-react";
 import AlertSettings from "../AlertSettings";
@@ -65,7 +66,7 @@ const PhotoGallery = ({ photos, name }) => {
 const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, user, onSignInRequired }) => {
   const [activeDay, setActiveDay] = useState(filters.day || "today");
   const [showAlert, setShowAlert] = useState(false);
-  const filteredTimes = course.teeTimes.filter((t) => {
+  const filteredTimes = getFilteredTeeTimes(course.teeTimes).filter((t) => {
     if (t.day !== activeDay) return false;
     if (t.price > filters.maxPrice && filters.maxPrice !== 999) return false;
     if (filters.timeRange === "morning") { const h = parseInt(t.time); if (h < 6 || h >= 10) return false; }

@@ -548,6 +548,18 @@ export const BOSTON_COURSES = [
     ],
   },
 ];
+export const getFilteredTeeTimes = (teeTimes) => {
+ const now = new Date();
+ const currentHour = now.getHours();
+ const currentMinute = now.getMinutes();
+ return teeTimes.filter((t) => {
+   if (t.day !== "today") return true;
+   const [h, m] = t.time.split(":").map(Number);
+   if (h > currentHour) return true;
+   if (h === currentHour && m > currentMinute) return true;
+   return false;
+ });
+};
 export const getDistanceMiles = (lat1, lng1, lat2, lng2) => {
   const R = 3958.8;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
