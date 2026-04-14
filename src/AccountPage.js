@@ -7,7 +7,9 @@ const AccountPage = ({ user, onBack, onSignInRequired }) => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    if (user) fetchAlerts();
+    if (user) {
+      loadAlerts();
+    }
   }, [user]);
   const fetchAlerts = async () => {
     setLoading(true);
