@@ -1,4 +1,5 @@
 import { getFilteredTeeTimes } from "../data/courses";
+import { useCoursePhoto } from "../useCoursePhoto";
 import React, { useState } from "react";
 import { Heart, X, MapPin, ExternalLink, Clock, Phone, Globe, Bell } from "lucide-react";
 import AlertSettings from "../AlertSettings";
@@ -66,6 +67,7 @@ const PhotoGallery = ({ photos, name }) => {
 const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, user, onSignInRequired }) => {
   const [activeDay, setActiveDay] = useState(filters.day || "today");
   const [showAlert, setShowAlert] = useState(false);
+  const googlePhoto = useCoursePhoto(course.name, course.city);
   const filteredTimes = getFilteredTeeTimes(course.teeTimes).filter((t) => {
     if (t.day !== activeDay) return false;
     if (t.price > filters.maxPrice && filters.maxPrice !== 999) return false;
@@ -82,18 +84,18 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, u
 </div>
       {/* Photo gallery or single photo */}
       {course.photos && course.photos.length > 0 ? (
-<PhotoGallery photos={course.photos} name={course.name} />
-      ) : course.photo ? (
+{/* Course photo */}
+     {(googlePhoto || course.photo) && (
 <div style={{ width: "100%", height: 200, overflow: "hidden", position: "relative" }}>
 <img
-            src={course.photo}
-            alt={course.name}
-            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
-            onError={(e) => { e.target.style.display = "none"; }}
-          />
+           src={googlePhoto || course.photo}
+           alt={course.name}
+           style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
+           onError={(e) => { e.target.style.display = "none"; }}
+         />
 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, #0a160a)" }} />
 </div>
-      ) : null}
+     )}
       {/* Header */}
 <div style={{ padding: "12px 20px 0", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
 <div style={{ flex: 1, paddingRight: 12 }}>
