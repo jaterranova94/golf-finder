@@ -1,8 +1,7 @@
-import { getFilteredTeeTimes } from "../data/courses";
-import { useCoursePhoto } from "../useCoursePhoto";
 import React, { useState } from "react";
 import { Heart, X, MapPin, ExternalLink, Clock, Phone, Globe, Bell } from "lucide-react";
 import AlertSettings from "../AlertSettings";
+import { useCoursePhoto } from "../useCoursePhoto";
 const timeLabel = (time) => {
   const [h, m] = time.split(":").map(Number);
   const period = h >= 12 ? "PM" : "AM";
@@ -11,64 +10,11 @@ const timeLabel = (time) => {
 };
 const spotsColor = (spots) =>
   spots <= 1 ? "#e87070" : spots === 2 ? "#e8c070" : "#7db87d";
-const PhotoGallery = ({ photos, name }) => {
-  const [active, setActive] = React.useState(0);
-  return (
-<div style={{ position: "relative", width: "100%", height: 220, overflow: "hidden", background: "#060e06" }}>
-      {photos.map((src, i) => (
-<img
-          key={i}
-          src={src}
-          alt={`${name} ${i + 1}`}
-          style={{
-            position: "absolute", inset: 0,
-            width: "100%", height: "100%",
-            objectFit: "cover", opacity: active === i ? 0.85 : 0,
-            transition: "opacity 0.4s ease",
-          }}
-          onError={(e) => { e.target.style.display = "none"; }}
-        />
-      ))}
-<div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, #0a160a)" }} />
-      {photos.length > 1 && (
-<div style={{ position: "absolute", bottom: 12, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6 }}>
-          {photos.map((_, i) => (
-<button
-              key={i}
-              onClick={() => setActive(i)}
-              style={{
-                width: active === i ? 20 : 6,
-                height: 6, borderRadius: 3,
-                background: active === i ? "#7db87d" : "rgba(255,255,255,0.4)",
-                border: "none", cursor: "pointer",
-                transition: "all 0.2s", padding: 0,
-              }}
-            />
-          ))}
-</div>
-      )}
-      {photos.length > 1 && (
-<>
-<button
-            onClick={() => setActive((a) => (a - 1 + photos.length) % photos.length)}
-            style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", border: "none", color: "#fff", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16 }}>
-            ‹
-</button>
-<button
-            onClick={() => setActive((a) => (a + 1) % photos.length)}
-            style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.4)", border: "none", color: "#fff", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16 }}>
-            ›
-</button>
-</>
-      )}
-</div>
-  );
-};
 const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, user, onSignInRequired }) => {
   const [activeDay, setActiveDay] = useState(filters.day || "today");
   const [showAlert, setShowAlert] = useState(false);
   const googlePhoto = useCoursePhoto(course.name, course.city);
-  const filteredTimes = getFilteredTeeTimes(course.teeTimes).filter((t) => {
+  const filteredTimes = course.teeTimes.filter((t) => {
     if (t.day !== activeDay) return false;
     if (t.price > filters.maxPrice && filters.maxPrice !== 999) return false;
     if (filters.timeRange === "morning") { const h = parseInt(t.time); if (h < 6 || h >= 10) return false; }
@@ -82,20 +28,18 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, u
 <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, paddingBottom: 4 }}>
 <div style={{ width: 36, height: 4, borderRadius: 2, background: "#2a4a2a" }} />
 </div>
-      {/* Photo gallery or single photo */}
-      {course.photos && course.photos.length > 0 ? (
-{/* Course photo */}
-     {(googlePhoto || course.photo) && (
+      {/* Course photo */}
+      {(googlePhoto || course.photo) && (
 <div style={{ width: "100%", height: 200, overflow: "hidden", position: "relative" }}>
 <img
-           src={googlePhoto || course.photo}
-           alt={course.name}
-           style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
-           onError={(e) => { e.target.style.display = "none"; }}
-         />
+            src={googlePhoto || course.photo}
+            alt={course.name}
+            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
+            onError={(e) => { e.target.style.display = "none"; }}
+          />
 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, #0a160a)" }} />
 </div>
-     )}
+      )}
       {/* Header */}
 <div style={{ padding: "12px 20px 0", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
 <div style={{ flex: 1, paddingRight: 12 }}>
@@ -119,12 +63,12 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, u
 <Stat label="Rating" value={course.courseRating} />
 <Stat label="Par" value={course.par} />
 <Stat label="Holes" value={course.holes} />
-<Stat label="Walk" value={course.walkable ? "✓" : "Cart"} highlight={course.walkable} />
+<Stat label="Walk" value={course.walkable ? "Yes" : "Cart"} highlight={course.walkable} />
 </div>
       {/* Green fee + tags */}
 <div style={{ padding: "14px 20px", borderBottom: "1px solid #1a2e1a" }}>
 <div style={{ fontSize: 13, color: "#5a7a5a", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Green Fees</div>
-<div style={{ fontSize: 24, fontWeight: 700, color: "#b8d8b8", marginBottom: 10 }}>${course.greenFee.min}–${course.greenFee.max}</div>
+<div style={{ fontSize: 24, fontWeight: 700, color: "#b8d8b8", marginBottom: 10 }}>${course.greenFee.min}-${course.greenFee.max}</div>
 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {course.tags.map((tag) => (
 <span key={tag} style={{ padding: "4px 10px", borderRadius: 20, background: "rgba(125,184,125,0.1)", border: "1px solid #2a4a2a", fontSize: 12, color: "#7db87d" }}>{tag}</span>
@@ -134,7 +78,7 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, u
       {/* Contact + links */}
 <div style={{ padding: "14px 20px", borderBottom: "1px solid #1a2e1a", display: "flex", flexDirection: "column", gap: 10 }}>
         {course.phone && (
-<a href={`tel:${course.phone}`} style={{ display: "flex", alignItems: "center", gap: 10, color: "#7db87d", textDecoration: "none", fontSize: 14 }}>
+<a href={"tel:" + course.phone} style={{ display: "flex", alignItems: "center", gap: 10, color: "#7db87d", textDecoration: "none", fontSize: 14 }}>
 <Phone size={14} />{course.phone}
 </a>
         )}
@@ -144,7 +88,7 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, u
 </a>
         )}
         {course.address && (
-<a href={`https://maps.google.com/?q=${encodeURIComponent(course.address)}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, color: "#5a7a5a", textDecoration: "none", fontSize: 13 }}>
+<a href={"https://maps.google.com/?q=" + encodeURIComponent(course.address)} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, color: "#5a7a5a", textDecoration: "none", fontSize: 13 }}>
 <MapPin size={14} />{course.address}
 </a>
         )}
@@ -169,7 +113,6 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, u
             ))}
 </div>
 </div>
-        {/* Alert settings panel */}
         {showAlert && (
 <AlertSettings
             course={course}
