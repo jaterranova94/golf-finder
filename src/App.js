@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import AccountPage from "./AccountsPage";
 import { Map, Marker, NavigationControl } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { SlidersHorizontal, Heart, MapPin, List, Map as MapIcon, User, LogOut } from "lucide-react";
@@ -9,6 +8,7 @@ import CourseSheet from "./components/CourseSheet";
 import FilterPanel from "./components/FilterPanel";
 import HomePage from "./HomePage";
 import AuthModal from "./AuthModal";
+import AccountPage from "./AccountPage";
 import { supabase } from "./supabase";
 const DEFAULT_FILTERS = {
   day: "today",
@@ -47,7 +47,7 @@ export default function App() {
     setUser(null);
   };
   if (showHome) return <HomePage onEnter={() => setShowHome(false)} />;
-  if (showAccount) return <AccountPage
+  if (showAccount) return <AccountPage user={user} onBack={() => setShowAccount(false)} onSignInRequired={() => { setShowAccount(false); setShowAuth(true); }} />;
   const filteredCourses = BOSTON_COURSES.filter((course) => {
     if (filters.walkableOnly && !course.walkable) return false;
     const dist = getDistanceMiles(BOSTON_CENTER.lat, BOSTON_CENTER.lng, course.lat, course.lng);
@@ -89,12 +89,17 @@ export default function App() {
 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
 <FilterButton onClick={() => setShowFilters(true)} count={activeFilterCount} />
           {user ? (
-<button onClick={handleSignOut} style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(20,40,20,0.8)", border: "1px solid #1e3a1e", color: "#6a8a6a", borderRadius: 10, padding: "8px 12px", cursor: "pointer", fontSize: 13, fontFamily: "'Georgia', serif" }}>
-<LogOut size={14} />Out
+<div style={{ display: "flex", gap: 6 }}>
+<button onClick={() => setShowAccount(true)} style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(125,184,125,0.15)", border: "1px solid #3a6a3a", color: "#7db87d", borderRadius: 10, padding: "8px 12px", cursor: "pointer", fontSize: 13, fontFamily: "'Georgia', serif" }}>
+<User size={14} />Account
 </button>
+<button onClick={handleSignOut} style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(20,40,20,0.8)", border: "1px solid #1e3a1e", color: "#6a8a6a", borderRadius: 10, padding: "8px 12px", cursor: "pointer", fontSize: 13, fontFamily: "'Georgia', serif" }}>
+<LogOut size={14} />
+</button>
+</div>
           ) : (
-<button onClick={() => user ? setShowAccount(true) : setShowAuth(true)} style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(125,184,125,0.15)", border: "1px solid #3a6a3a", color: "#7db87d", borderRadius: 10, padding: "8px 12px", cursor: "pointer", fontSize: 13, fontFamily: "'Georgia', serif" }}>
-<User size={14} />{user ? "Account" : "Sign In"}
+<button onClick={() => setShowAuth(true)} style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(125,184,125,0.15)", border: "1px solid #3a6a3a", color: "#7db87d", borderRadius: 10, padding: "8px 12px", cursor: "pointer", fontSize: 13, fontFamily: "'Georgia', serif" }}>
+<User size={14} />Sign In
 </button>
           )}
 </div>
