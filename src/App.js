@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Map, Marker, NavigationControl } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { SlidersHorizontal, Heart, MapPin, List, Map as MapIcon } from "lucide-react";
+import { SlidersHorizontal, Heart, MapPin, List, Map as MapIcon, User, LogOut } from "lucide-react";
 import { BOSTON_COURSES, BOSTON_CENTER, getDistanceMiles } from "./data/courses";
 import { useFavorites } from "./hooks/useFavorites";
 import CourseSheet from "./components/CourseSheet";
 import FilterPanel from "./components/FilterPanel";
 import HomePage from "./HomePage";
+import AuthModal from "./AuthModal";
+import { supabase } from "./supabase";
 const DEFAULT_FILTERS = {
   day: "today",
   maxPrice: 999,
@@ -19,14 +21,29 @@ export default function App() {
   const [showHome, setShowHome] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [view, setView] = useState("map");
+  const [user, setUser] = useState(null);
   const [viewState, setViewState] = useState({
     latitude: BOSTON_CENTER.lat,
     longitude: BOSTON_CENTER.lng,
     zoom: 10.5,
   });
   const { isFavorite, toggleFavorite, favorites } = useFavorites();
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
   if (showHome) return <HomePage onEnter={() => setShowHome(false)} />;
   const filteredCourses = BOSTON_COURSES.filter((course) => {
     if (filters.walkableOnly && !course.walkable) return false;
@@ -66,7 +83,18 @@ export default function App() {
 <div style={{ fontSize: 20, fontWeight: 700, color: "#e8f0e8", letterSpacing: "-0.02em" }}>⛳ FairwayFinder</div>
 <div style={{ fontSize: 11, color: "#4a6a4a", letterSpacing: "0.1em", textTransform: "uppercase" }}>Boston Area · {filteredCourses.length} courses</div>
 </div>
+<div style={{ display: "flex", gap: 8, alignItems: "center" }}>
 <FilterButton onClick={() => setShowFilters(true)} count={activeFilterCount} />
+          {user ? (
+<button onClick={handleSignOut} style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(20,40,20,0.8)", border: "1px solid #1e3a1e", color: "#6a8a6a", borderRadius: 10, padding: "8px 12px", cursor: "pointer", fontSize: 13, fontFamily: "'Georgia', serif" }}>
+<LogOut size={14} />Out
+</button>
+          ) : (
+<button onClick={() => setShowAuth(true)} style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(125,184,125,0.15)", border: "1px solid #3a6a3a", color: "#7db87d", borderRadius: 10, padding: "8px 12px", cursor: "pointer", fontSize: 13, fontFamily: "'Georgia', serif" }}>
+<User size={14} />Sign In
+</button>
+          )}
+</div>
 </div>
       {/* View toggle */}
 <div style={{ position: "absolute", top: 76, left: "50%", transform: "translateX(-50%)", zIndex: 100, background: "rgba(10,20,10,0.92)", border: "1px solid #1e3a1e", borderRadius: 30, display: "flex", padding: 3 }}>
@@ -127,10 +155,14 @@ export default function App() {
       )}
       {selectedCourse && (
 <CourseSheet course={selectedCourse} isFavorite={isFavorite(selectedCourse.id)}
-          onToggleFavorite={toggleFavorite} onClose={() => setSelectedCourse(null)} filters={filters} />
+          onToggleFavorite={toggleFavorite} onClose={() => setSelectedCourse(null)}
+          filters={filters} user={user} onSignInRequired={() => setShowAuth(true)} />
       )}
       {showFilters && (
 <FilterPanel filters={filters} setFilters={setFilters} onClose={() => setShowFilters(false)} />
+      )}
+      {showAuth && (
+<AuthModal onClose={() => setShowAuth(false)} onSuccess={() => setUser(user)} />
       )}
 </div>
   );
