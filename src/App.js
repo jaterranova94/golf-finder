@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import AccountPage from "./AccountsPage";
 import { Map, Marker, NavigationControl } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { SlidersHorizontal, Heart, MapPin, List, Map as MapIcon, User, LogOut } from "lucide-react";
@@ -19,6 +20,7 @@ const DEFAULT_FILTERS = {
 const FREE_MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
 export default function App() {
   const [showHome, setShowHome] = useState(true);
+  const [showAccount, setShowAccount] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
@@ -45,6 +47,7 @@ export default function App() {
     setUser(null);
   };
   if (showHome) return <HomePage onEnter={() => setShowHome(false)} />;
+  if (showAccount) return <AccountPage
   const filteredCourses = BOSTON_COURSES.filter((course) => {
     if (filters.walkableOnly && !course.walkable) return false;
     const dist = getDistanceMiles(BOSTON_CENTER.lat, BOSTON_CENTER.lng, course.lat, course.lng);
@@ -90,8 +93,8 @@ export default function App() {
 <LogOut size={14} />Out
 </button>
           ) : (
-<button onClick={() => setShowAuth(true)} style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(125,184,125,0.15)", border: "1px solid #3a6a3a", color: "#7db87d", borderRadius: 10, padding: "8px 12px", cursor: "pointer", fontSize: 13, fontFamily: "'Georgia', serif" }}>
-<User size={14} />Sign In
+<button onClick={() => user ? setShowAccount(true) : setShowAuth(true)} style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(125,184,125,0.15)", border: "1px solid #3a6a3a", color: "#7db87d", borderRadius: 10, padding: "8px 12px", cursor: "pointer", fontSize: 13, fontFamily: "'Georgia', serif" }}>
+<User size={14} />{user ? "Account" : "Sign In"}
 </button>
           )}
 </div>
