@@ -14,7 +14,7 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, u
   const [activeDay, setActiveDay] = useState(filters.day || "today");
   const [showAlert, setShowAlert] = useState(false);
   const googlePhoto = useCoursePhoto(course.name, course.city);
-  const filteredTimes = course.teeTimes.filter((t) => {
+  const filteredTimes = getFilteredTeeTtime(course.teeTimes).filter((t) => {
     if (t.day !== activeDay) return false;
     if (t.price > filters.maxPrice && filters.maxPrice !== 999) return false;
     if (filters.timeRange === "morning") { const h = parseInt(t.time); if (h < 6 || h >= 10) return false; }
