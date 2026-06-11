@@ -4,6 +4,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { SlidersHorizontal, Heart, MapPin, List, Map as MapIcon, User, LogOut } from "lucide-react";
 import { BOSTON_COURSES, BOSTON_CENTER, getDistanceMiles } from "./data/courses";
 import { useFavorites } from "./hooks/useFavorites";
+import { useCoursePhoto } from "./useCoursePhoto";
 import CourseSheet from "./components/CourseSheet";
 import FilterPanel from "./components/FilterPanel";
 import HomePage from "./HomePage";
@@ -167,7 +168,7 @@ export default function App() {
           filters={filters} user={user} onSignInRequired={() => setShowAuth(true)} />
       )}
       {showFilters && (
-<FilterPanel filters={filters} setFilters={setFilters} onClose={() => setShowFilters(false)} />
+<FilterPanel filters={filters} setFilters={setFilters} onClose={() => setShowFilters(false)} resultCount={filteredCourses.length} />
       )}
       {showAuth && (
 <AuthModal onClose={() => setShowAuth(false)} onSuccess={() => supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null))} />
@@ -184,13 +185,22 @@ const FilterButton = ({ onClick, count }) => (
 );
 const CourseListCard = ({ course, isFav, onToggleFav, onClick, cheapestPrice, filterDay }) => {
   const dist = getDistanceMiles(BOSTON_CENTER.lat, BOSTON_CENTER.lng, course.lat, course.lng);
+  const googlePhoto = useCoursePhoto(course.name, course.city);
+  const photo = googlePhoto || course.photo;
   return (
-<div style={{ margin: "0 12px 10px", background: "#0a160a", border: "1px solid #1a2e1a", borderRadius: 14, padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-<div style={{ flex: 1, cursor: "pointer" }} onClick={onClick}>
-<div style={{ fontSize: 16, fontWeight: 600, color: "#d8e8d8", marginBottom: 3 }}>{course.name}</div>
-<div style={{ fontSize: 12, color: "#4a6a4a", display: "flex", gap: 10, marginBottom: 8 }}>
-<span><MapPin size={10} style={{ marginRight: 3 }} />{course.city}</span>
-<span>⬤ {dist.toFixed(1)} mi</span>
+<div style={{ margin: "0 12px 10px", background: "#0a160a", border: "1px solid #1a2e1a", borderRadius: 14, display: "flex", overflow: "hidden", alignItems: "stretch" }}>
+      {/* Thumbnail */}
+<div style={{ width: 80, flexShrink: 0, background: "#0f1f0f", display: "flex", alignItems: "center", justifyContent: "center" }} onClick={onClick}>
+        {photo
+          ? <img src={photo} alt={course.name} style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }} onError={(e) => { e.target.style.display = "none"; }} />
+          : <span style={{ fontSize: 24, opacity: 0.3 }}>⛳</span>}
+</div>
+      {/* Content */}
+<div style={{ flex: 1, padding: "12px 10px 12px 14px", cursor: "pointer", minWidth: 0 }} onClick={onClick}>
+<div style={{ fontSize: 15, fontWeight: 600, color: "#d8e8d8", marginBottom: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{course.name}</div>
+<div style={{ fontSize: 12, color: "#4a6a4a", display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+<span><MapPin size={10} style={{ marginRight: 2 }} />{course.city}</span>
+<span>{dist.toFixed(1)} mi</span>
 <span>Slope {course.slope}</span>
 </div>
 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -198,9 +208,12 @@ const CourseListCard = ({ course, isFav, onToggleFav, onClick, cheapestPrice, fi
 <span style={{ fontSize: 11, color: "#3a5a3a" }}>{course.teeTimes.filter((t) => t.day === filterDay).length} times {filterDay}</span>
 </div>
 </div>
-<button onClick={onToggleFav} style={{ background: "none", border: "none", cursor: "pointer", paddingTop: 2 }}>
+      {/* Favorite */}
+<div style={{ display: "flex", alignItems: "center", paddingRight: 14 }}>
+<button onClick={onToggleFav} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
 <Heart size={20} fill={isFav ? "#e87070" : "none"} color={isFav ? "#e87070" : "#3a5a3a"} />
 </button>
+</div>
 </div>
   );
 };

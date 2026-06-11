@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Heart, X, MapPin, ExternalLink, Clock, Phone, Globe, Bell } from "lucide-react";
+import { Heart, X, MapPin, Clock, Phone, Globe, Bell } from "lucide-react";
 import AlertSettings from "../AlertSettings";
 import { useCoursePhoto } from "../useCoursePhoto";
+import "../App.css";
 const timeLabel = (time) => {
   const [h, m] = time.split(":").map(Number);
   const period = h >= 12 ? "PM" : "AM";
@@ -14,7 +15,7 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, u
   const [activeDay, setActiveDay] = useState(filters.day || "today");
   const [showAlert, setShowAlert] = useState(false);
   const googlePhoto = useCoursePhoto(course.name, course.city);
-  const filteredTimes = getFilteredTeeTtime(course.teeTimes).filter((t) => {
+  const filteredTimes = course.teeTimes.slice().sort((a, b) => a.time.localeCompare(b.time)).filter((t) => {
     if (t.day !== activeDay) return false;
     if (t.price > filters.maxPrice && filters.maxPrice !== 999) return false;
     if (filters.timeRange === "morning") { const h = parseInt(t.time); if (h < 6 || h >= 10) return false; }
@@ -23,7 +24,7 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, u
     return true;
   });
   return (
-<div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0a160a", borderTop: "1px solid #1e3a1e", borderRadius: "20px 20px 0 0", zIndex: 150, maxHeight: "88vh", overflowY: "auto", fontFamily: "'Georgia', serif", color: "#d8e8d8", boxShadow: "0 -8px 40px rgba(0,0,0,0.6)" }}>
+<div className="sheet-slide-up" style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0a160a", borderTop: "1px solid #1e3a1e", borderRadius: "20px 20px 0 0", zIndex: 150, maxHeight: "88vh", overflowY: "auto", fontFamily: "'Georgia', serif", color: "#d8e8d8", boxShadow: "0 -8px 40px rgba(0,0,0,0.6)" }}>
       {/* Drag handle */}
 <div style={{ display: "flex", justifyContent: "center", paddingTop: 12, paddingBottom: 4 }}>
 <div style={{ width: 36, height: 4, borderRadius: 2, background: "#2a4a2a" }} />
@@ -129,14 +130,14 @@ const CourseSheet = ({ course, isFavorite, onToggleFavorite, onClose, filters, u
 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {filteredTimes.map((tt) => (
 <a key={tt.id} href={course.teeTimesUrl} target="_blank" rel="noopener noreferrer"
-                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0f1f0f", border: "1px solid #1e3a1e", borderRadius: 12, padding: "12px 16px", textDecoration: "none", color: "inherit" }}>
-<div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0f1f0f", border: "1px solid #1e3a1e", borderRadius: 12, padding: "11px 14px", textDecoration: "none", color: "inherit" }}>
+<div style={{ display: "flex", alignItems: "center", gap: 12 }}>
 <div style={{ fontSize: 17, fontWeight: 600, color: "#d8e8d8" }}>{timeLabel(tt.time)}</div>
-<div style={{ fontSize: 12, color: spotsColor(tt.spots) }}>{tt.spots} {tt.spots === 1 ? "spot" : "spots"}</div>
+<div style={{ fontSize: 11, color: spotsColor(tt.spots), background: `${spotsColor(tt.spots)}18`, border: `1px solid ${spotsColor(tt.spots)}40`, borderRadius: 6, padding: "2px 7px" }}>{tt.spots} {tt.spots === 1 ? "spot" : "spots"}</div>
 </div>
 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-<div style={{ fontSize: 18, fontWeight: 700, color: "#b8d8b8" }}>${tt.price}</div>
-<ExternalLink size={14} color="#4a6a4a" />
+<div style={{ fontSize: 17, fontWeight: 700, color: "#b8d8b8" }}>${tt.price}</div>
+<div style={{ background: "#7db87d", color: "#060e06", borderRadius: 8, padding: "5px 12px", fontSize: 12, fontWeight: 700, letterSpacing: "0.02em" }}>Book →</div>
 </div>
 </a>
             ))}

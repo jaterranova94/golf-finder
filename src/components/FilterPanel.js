@@ -1,6 +1,6 @@
 import React from "react";
 import { SlidersHorizontal, X } from "lucide-react";
-const FilterPanel = ({ filters, setFilters, onClose }) => {
+const FilterPanel = ({ filters, setFilters, onClose, resultCount }) => {
   const update = (key, value) => setFilters((f) => ({ ...f, [key]: value }));
   return (
 <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(10,20,10,0.7)", zIndex: 200, display: "flex", alignItems: "flex-end" }} onClick={onClose}>
@@ -48,8 +48,12 @@ const FilterPanel = ({ filters, setFilters, onClose }) => {
           value={filters.walkableOnly}
           onChange={(v) => update("walkableOnly", v)}
         />
-<button onClick={() => { setFilters({ day: "today", maxPrice: 999, timeRange: "all", maxDistance: 999, walkableOnly: false }); onClose(); }}
-          style={{ marginTop: 24, width: "100%", padding: "14px", background: "transparent", border: "1px solid #2a4a2a", color: "#7db87d", borderRadius: 10, cursor: "pointer", fontFamily: "'Georgia', serif", fontSize: 15 }}>
+<button onClick={onClose}
+          style={{ marginTop: 24, width: "100%", padding: "14px", background: "#7db87d", border: "none", color: "#060e06", borderRadius: 10, cursor: "pointer", fontFamily: "'Georgia', serif", fontSize: 15, fontWeight: 700 }}>
+          Show {resultCount} Course{resultCount !== 1 ? "s" : ""}
+</button>
+<button onClick={() => { setFilters({ day: "today", maxPrice: 999, timeRange: "all", maxDistance: 999, walkableOnly: false }); }}
+          style={{ marginTop: 10, width: "100%", padding: "12px", background: "transparent", border: "1px solid #2a4a2a", color: "#5a7a5a", borderRadius: 10, cursor: "pointer", fontFamily: "'Georgia', serif", fontSize: 14 }}>
           Reset Filters
 </button>
 </div>

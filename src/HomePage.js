@@ -107,7 +107,7 @@ const HomePage = ({ onEnter }) => {
       {/* Stats */}
 <div style={{ padding: "40px 24px", borderBottom: "1px solid #1a2e1a" }}>
 <div style={{ display: "flex", justifyContent: "space-around", maxWidth: 480, margin: "0 auto" }}>
-<Stat number="20+" label="Courses" />
+<Stat number="50+" label="Courses" />
 <Stat number="$22" label="Lowest Fee" />
 <Stat number="45min" label="Max Drive" />
 </div>
