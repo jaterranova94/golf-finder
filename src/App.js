@@ -34,6 +34,8 @@ export default function App() {
     zoom: 10.5,
   });
   const { isFavorite, toggleFavorite, favorites } = useFavorites();
+  const [liveTeeTimesMap, setLiveTeeTimesMap] = useState({});
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -43,6 +45,32 @@ export default function App() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+    supabase
+      .from("tee_times")
+      .select("id, course_id, date, time, price, spots")
+      .in("date", [today, tomorrow])
+      .then(({ data }) => {
+        if (!data || data.length === 0) return;
+        const map = {};
+        data.forEach((tt) => {
+          if (!map[tt.course_id]) map[tt.course_id] = [];
+          map[tt.course_id].push({
+            id: tt.id,
+            time: tt.time,
+            price: tt.price,
+            spots: tt.spots,
+            day: tt.date === today ? "today" : "tomorrow",
+          });
+        });
+        setLiveTeeTimesMap(map);
+      });
+  }, []);
+
+  const getTeeTimes = (course) => liveTeeTimesMap[course.id] || course.teeTimes;
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -53,7 +81,7 @@ export default function App() {
     if (filters.walkableOnly && !course.walkable) return false;
     const dist = getDistanceMiles(BOSTON_CENTER.lat, BOSTON_CENTER.lng, course.lat, course.lng);
     if (filters.maxDistance !== 999 && dist > filters.maxDistance) return false;
-    const hasTeeTime = course.teeTimes.some((t) => {
+    const hasTeeTime = getTeeTimes(course).some((t) => {
       if (t.day !== filters.day) return false;
       if (filters.maxPrice !== 999 && t.price > filters.maxPrice) return false;
       if (filters.timeRange === "morning") { const h = parseInt(t.time); if (h < 6 || h >= 10) return false; }
@@ -74,7 +102,7 @@ export default function App() {
     setViewState((v) => ({ ...v, latitude: course.lat, longitude: course.lng, zoom: 12 }));
   };
   const cheapestTime = (course) => {
-    const times = course.teeTimes.filter((t) => t.day === filters.day);
+    const times = getTeeTimes(course).filter((t) => t.day === filters.day);
     if (!times.length) return null;
     return Math.min(...times.map((t) => t.price));
   };
@@ -163,7 +191,7 @@ export default function App() {
 </div>
       )}
       {selectedCourse && (
-<CourseSheet course={selectedCourse} isFavorite={isFavorite(selectedCourse.id)}
+<CourseSheet course={{ ...selectedCourse, teeTimes: getTeeTimes(selectedCourse) }} isFavorite={isFavorite(selectedCourse.id)}
           onToggleFavorite={toggleFavorite} onClose={() => setSelectedCourse(null)}
           filters={filters} user={user} onSignInRequired={() => setShowAuth(true)} />
       )}
